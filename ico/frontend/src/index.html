@@ -1,0 +1,49 @@
+<title>Sample Project</title>
+<link rel="stylesheet" type="text/css" href="./index.css">
+
+<h1>SpaceCoin ICO</h1>
+
+<section>
+  <h2>SPC</h2>
+
+  <h3>Current Phase Details</h3>
+  <div class="phase-details">
+    <div>
+      Total Fund Raised: <span id="ico_spc_fund_raised"></span> ETH
+    </div>
+    <div>
+      Contribute Phase: <span id="ico_spc_phase"></span>
+    </div>
+    <div>
+      Phase Max Contribution: <span id="ico_spc_phase_max"></span> ETH
+    </div>
+    <div>
+      Individual Max Contribution: <span id="ico_spc_individual_max"></span> ETH
+    </div>
+  </div>
+  
+  <hr class="solid">
+  
+  <div class="user-details">
+    <div>
+      ETH contributed: <span id="ico_eth_contributed"></span> ETH
+    </div>
+    <div>
+      SPC left to buy: <span id="ico_spc_left"></span> ETH
+    </div>
+  </div>
+  
+  
+  <form id="ico_spc_buy">
+    Buy SPC
+    <input name="eth" value="0.1" autocomplete="off">ETH
+    <button type="submit">Buy</button>
+  </form>
+
+  <form id="ico_spc_claim">
+    Claim SPC (Claiming SPC token will start on Open Phase)
+    <button type="submit" id="ico_spc_claim_btn" disabled>Redeem</button>
+  </form>
+</section>
+
+<script type="module" src="./index.js"></script>
