@@ -179,14 +179,35 @@ describe("Crowdfundr", () => {
   });
 
   describe("Project: Additional Tests", () => {
-    /* 
-      TODO: You may add additional tests here if you need to
+    describe("Contributions mint", () => {
+      it("Correctly handles contributions > 2 ETH", async () => {
+        const { deployer, alice, projectFactory } = await loadFixture(setupFixture);
+      
+        const txReceiptUnresolved = await projectFactory.connect(deployer).create(ethers.utils.parseEther("5"), "Project 2", "PROJ2");
+        const txReceipt = await txReceiptUnresolved.wait();
+      
+        const projectAddress = txReceipt.events![0].args![0];
+        const project: Project = (await ethers.getContractAt("Project", projectAddress)) as Project;
+          
+        await project.connect(alice).contribute({ value: ethers.utils.parseEther("2.3") });
+        expect(await project.balanceOf(alice.address)).to.equal(2);
+      });
 
-      NOTE: If you wind up protecting against a vulnerability that is not
-            tested for below, you should add at least one test here.
-
-      DO NOT: Delete or change the test names for the tests provided below
-    */
+      it("Awards a contributor a second badge if they contribute 1.2 followed by 0.9 ", async () => {
+        const { deployer, alice, projectFactory } = await loadFixture(setupFixture);
+      
+        const txReceiptUnresolved = await projectFactory.connect(deployer).create(ethers.utils.parseEther("5"), "Project 2", "PROJ2");
+        const txReceipt = await txReceiptUnresolved.wait();
+      
+        const projectAddress = txReceipt.events![0].args![0];
+        const project: Project = (await ethers.getContractAt("Project", projectAddress)) as Project;
+          
+        await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.2") });
+        expect(await project.balanceOf(alice.address)).to.equal(1);
+        await project.connect(alice).contribute({ value: ethers.utils.parseEther("0.9") });
+        expect(await project.balanceOf(alice.address)).to.equal(2);
+      });
+    });
   });
 
   describe("Project", () => {
@@ -233,7 +254,7 @@ describe("Crowdfundr", () => {
           
           await expect(
             project.contribute({ value: ethers.utils.parseEther("0.009") })
-          ).to.be.revertedWith("Contribute amount is less than 0.01 ETH");
+          ).to.be.revertedWith("Project: Contribute amount is less than 0.01 ETH");
         });
 
         it("Accepts contributions of exactly 0.01 ETH", async () => {
@@ -260,7 +281,7 @@ describe("Crowdfundr", () => {
 
           await expect(
             project.connect(alice).contribute({ value: ethers.utils.parseEther("0.1") })
-          ).to.be.revertedWith("The project is not active");
+          ).to.be.revertedWith("Project: The project is not active");
         });
 
         it("Prevents additional contributions after 30 days have passed since Project instance deployment", async () => {
@@ -270,7 +291,7 @@ describe("Crowdfundr", () => {
           
           await expect(
             project.connect(alice).contribute({ value: ethers.utils.parseEther("0.1") })
-          ).to.be.revertedWith("The project is not active");
+          ).to.be.revertedWith("Project: The project is not active");
         });
       });
     });
@@ -281,8 +302,8 @@ describe("Crowdfundr", () => {
           const { project } = await loadFixture(setupFixture);
 
           await expect(
-            project.untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The project is not successful");
+            project.withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The project is not successful");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
@@ -291,8 +312,8 @@ describe("Crowdfundr", () => {
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("0.5") });
 
           await expect(
-            project.connect(alice).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(alice).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
@@ -301,8 +322,8 @@ describe("Crowdfundr", () => {
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("0.5") });
 
           await expect(
-            project.connect(bob).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(bob).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
       });
 
@@ -311,7 +332,7 @@ describe("Crowdfundr", () => {
           const { project, deployer, alice } = await loadFixture(setupFixture);
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
-          await project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("0.5"));
+          await project.connect(deployer).withdrawals(ethers.utils.parseEther("0.5"));
           expect(await project.currentAmount()).to.be.lessThan(ethers.utils.parseEther("1.1"));
         });
 
@@ -320,7 +341,7 @@ describe("Crowdfundr", () => {
           
           let initialBalance = await ethers.provider.getBalance(deployer.address);
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
-          await project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("1.1"));
+          await project.connect(deployer).withdrawals(ethers.utils.parseEther("1.1"));
           let finalBalance = await ethers.provider.getBalance(deployer.address)
           let difference = finalBalance.sub(initialBalance);
           closeTo(difference, ethers.utils.parseEther("1.1"), 0.1);
@@ -330,9 +351,9 @@ describe("Crowdfundr", () => {
           const { project, deployer, alice } = await loadFixture(setupFixture);
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
-          await project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("0.5"));
+          await project.connect(deployer).withdrawals(ethers.utils.parseEther("0.5"));
           expect(await project.currentAmount()).to.be.lessThan(ethers.utils.parseEther("1.1"));
-          await project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("0.5"));
+          await project.connect(deployer).withdrawals(ethers.utils.parseEther("0.5"));
           expect(await project.currentAmount()).to.be.lessThan(ethers.utils.parseEther("0.6"));
         });
 
@@ -341,15 +362,15 @@ describe("Crowdfundr", () => {
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
           await expect(
-            project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("1.2"))
-          ).to.be.revertedWith("Cannot withdraw more than leftover balance");
+            project.connect(deployer).withdrawals(ethers.utils.parseEther("1.2"))
+          ).to.be.revertedWith("Project: Cannot withdraw more than leftover balance");
         });
 
         it('Emits a WithdrawalFunds event after a withdrawal is made by the creator', async () => {
           const { project, deployer, alice } = await loadFixture(setupFixture);
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
-          const tx = await project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("0.5"));
+          const tx = await project.connect(deployer).withdrawals(ethers.utils.parseEther("0.5"));
           
           expect(tx)
             .to.emit(project, "WithdrawalFunds")
@@ -361,8 +382,8 @@ describe("Crowdfundr", () => {
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
           await expect(
-            project.connect(alice).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(alice).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
@@ -370,8 +391,8 @@ describe("Crowdfundr", () => {
 
           await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
           await expect(
-            project.connect(bob).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(bob).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
       });
 
@@ -383,8 +404,8 @@ describe("Crowdfundr", () => {
           await timeTravel(2592000); // after 30 days
           
           await expect(
-            project.connect(deployer).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The project is not successful");
+            project.connect(deployer).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The project is not successful");
         });
 
         it("Prevents contributors from withdrawing any funds (though they can still refund)", async () => {
@@ -394,8 +415,8 @@ describe("Crowdfundr", () => {
           await timeTravel(2592000); // after 30 days
           
           await expect(
-            project.connect(alice).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(alice).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
@@ -405,8 +426,8 @@ describe("Crowdfundr", () => {
           await timeTravel(2592000); // after 30 days
           
           await expect(
-            project.connect(bob).untrustedWithdrawals(ethers.utils.parseEther("0.5"))
-          ).to.be.revertedWith("The sender is not project owner");
+            project.connect(bob).withdrawals(ethers.utils.parseEther("0.5"))
+          ).to.be.revertedWith("Project: The sender is not project owner");
         });
       });
     });
@@ -419,7 +440,7 @@ describe("Crowdfundr", () => {
         await timeTravel(2592000); // after 30 days
 
         let initialBalance = await ethers.provider.getBalance(alice.address);
-        await project.connect(alice).untrustedRefunds();
+        await project.connect(alice).refunds();
         let finalBalance = await ethers.provider.getBalance(alice.address)
         let difference = finalBalance.sub(initialBalance);
         closeTo(difference, ethers.utils.parseEther("0.5"), 0.1);
@@ -431,8 +452,8 @@ describe("Crowdfundr", () => {
         await project.connect(alice).contribute({ value: ethers.utils.parseEther("1.1") });
 
         await expect(
-          project.connect(alice).untrustedRefunds()
-        ).to.be.revertedWith("The project did not failed");
+          project.connect(alice).refunds()
+        ).to.be.revertedWith("Project: The project did not failed");
       });
 
       it('Emits a RefundFunds event after a a contributor receives a refund', async () => {
@@ -441,7 +462,7 @@ describe("Crowdfundr", () => {
         await project.connect(alice).contribute({ value: ethers.utils.parseEther("0.5") });
         await timeTravel(2592000); // after 30 days
 
-        const tx = await project.connect(alice).untrustedRefunds();
+        const tx = await project.connect(alice).refunds();
         expect(tx)
           .to.emit(project, "RefundFunds")
           .withArgs(alice.address, ethers.utils.parseEther("0.5"));
@@ -457,7 +478,7 @@ describe("Crowdfundr", () => {
 
         await project.connect(deployer).cancelations();
         let initialBalance = await ethers.provider.getBalance(alice.address);
-        await project.connect(alice).untrustedRefunds();
+        await project.connect(alice).refunds();
         let finalBalance = await ethers.provider.getBalance(alice.address)
         let difference = finalBalance.sub(initialBalance);
         closeTo(difference, ethers.utils.parseEther("0.5"), 0.1);
@@ -471,7 +492,7 @@ describe("Crowdfundr", () => {
         
         await expect(
           project.connect(deployer).cancelations()
-        ).to.be.revertedWith("The project is not active");
+        ).to.be.revertedWith("Project: project is not active");
       });
 
       it('Emits a ProjectCancelation event after a project is cancelled by the creator', async () => {

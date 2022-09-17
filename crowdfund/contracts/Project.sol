@@ -3,8 +3,13 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
+/**
+ * @dev Implementation of Crowdfundr, a way to inherit inherits ERC-721 Non-Fungible Token Standard
+ * where creator can register a project with a goal to and contributors can contribute to meet the goal
+ * set by the creator
+ * @author @benedictleekw
+ */
 contract Project is ERC721 {
-
     enum State {
         Active,
         Successful,
@@ -16,9 +21,9 @@ contract Project is ERC721 {
     uint public immutable goalAmount;
     uint public currentAmount;
     mapping (address => uint) public fundsContributed;
-    bool public projectEnded = false;
+    bool public projectEnded;
     uint public finalAmount;
-    uint public currentNFTSupply;
+    uint public tokenId;
 
     // Emit event when there's a contribution
     event ContributionReceived(address contributor, uint amount, uint currentTotal);
@@ -33,7 +38,7 @@ contract Project is ERC721 {
     event ProjectCancelation(uint currentTotal);
 
     modifier onlyCreator() {
-        require(msg.sender == creator, "The sender is not project owner");
+        require(msg.sender == creator, "Project: The sender is not project owner");
         _;
     }
 
@@ -43,21 +48,28 @@ contract Project is ERC721 {
         creator = _creator;
     }
 
+    /** @dev external address can contribute ether to help reach the goal of the project
+      * and send contribution badge to contributors 
+      * requirements: active project and contribution equal or more than 0.01 ether
+     */ 
     function contribute() external payable {
-        require(checkState() == State.Active, "The project is not active");
-        require(msg.value >= 0.01 ether, "Contribute amount is less than 0.01 ETH");
-        uint initialContribution = fundsContributed[msg.sender];
+        require(checkState() == State.Active, "Project: The project is not active");
+        require(msg.value >= 0.01 ether, "Project: Contribute amount is less than 0.01 ETH");
         fundsContributed[msg.sender] = fundsContributed[msg.sender] + msg.value;
         currentAmount = currentAmount + msg.value;
-        if (initialContribution > 1 ether) {
-            initialContribution = initialContribution % 10;
-        }
-        if (msg.value + initialContribution >= 1 ether) {
-            mint();
+
+        uint badgesToBeMinted = (fundsContributed[msg.sender] / 1 ether) - balanceOf(msg.sender);
+
+        for (uint i = 0; i < badgesToBeMinted; i++) {
+            tokenId++;
+            _safeMint(msg.sender, tokenId);
         }
         emit ContributionReceived(msg.sender, msg.value, currentAmount);
     }
     
+    /** @dev checks the current state of the project
+      * 
+     */
     function checkState() public returns (State) {
         if (block.timestamp < deadline && currentAmount < goalAmount && !projectEnded) {
             return State.Active;
@@ -73,18 +85,24 @@ contract Project is ERC721 {
         }
     }
 
-    function untrustedWithdrawals(uint withdrawAmount) external onlyCreator {
-        require(checkState() == State.Successful, "The project is not successful");
-        require(currentAmount >= withdrawAmount, "Cannot withdraw more than leftover balance");
+    /** @dev when project succeeds, creator can withdraw any amount of money
+      * @param withdrawAmount amount of wei to withdraw
+     */
+    function withdrawals(uint withdrawAmount) external onlyCreator {
+        require(checkState() == State.Successful, "Project: The project is not successful");
+        require(currentAmount >= withdrawAmount, "Project: Cannot withdraw more than leftover balance");
         currentAmount -= withdrawAmount;
         (bool success, ) = msg.sender.call{value: withdrawAmount}("");
         require(success, "withdraw failed");
         emit WithdrawalFunds(withdrawAmount, currentAmount);
     }
 
-    function untrustedRefunds() public {
-        require(checkState() == State.Failed, "The project did not failed");
-        require(fundsContributed[msg.sender] > 0, "sender has no contributed funds balance");
+    /** @dev when project fails, contributors can get their money back
+      * requirements: failure or cancellation, previous contributors
+     */
+    function refunds() external {
+        require(checkState() == State.Failed, "Project: The project did not failed");
+        require(fundsContributed[msg.sender] > 0, "Project: sender has no contributed funds balance");
 
         uint refundAmount = fundsContributed[msg.sender];
         fundsContributed[msg.sender] = 0;
@@ -94,20 +112,12 @@ contract Project is ERC721 {
         emit RefundFunds(msg.sender, refundAmount);
     }
 
+    /** @dev creator address can cancel the project if before the deadline
+     * requirements: active project and creator
+     */
     function cancelations() external onlyCreator {
-        require(checkState() == State.Active, "The project is not active");
+        require(checkState() == State.Active, "Project: project is not active");
         deadline = block.timestamp;
         emit ProjectCancelation(currentAmount);
     }
-
-    function mint() public returns (uint256) {
-        currentNFTSupply++;
-        uint256 newItemId = currentNFTSupply;
-        _safeMint(msg.sender, newItemId);
-        return newItemId;
-    }
-
-    fallback() external payable {}
-
-    receive() external payable {}
 }
