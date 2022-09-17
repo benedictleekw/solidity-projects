@@ -54,11 +54,6 @@ function _delegate(address delegator, address delegatee) internal {
 
 Since the votes are delegation transitively which make it difficult to keep track on the delegated votes since they are chained together. As provided in the example, in order to get the voting power/count of C, we will need to know how much voting power B has, and to know that, we need to go one level higher to know how much voting power A has. As the chain get longer, we will go down a rabbit hole which is not not wise espeically on chain.
 
-## Unfinised feature
-1) Did not get enough time to finish the feature to do bulk voting using offchain signatures.
-The idea is to pass in an array of signatures and have a loop to verify each signature is valid (a member votes) and cast those votes by calling `_votes()`
-
-
 ## Useful Commands
 
 Try running some of the following commands:
