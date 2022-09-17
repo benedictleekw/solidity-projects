@@ -1,8 +1,9 @@
 # DAO Project
 
-## Technical Spec
-<!-- Here you should list your DAO specification. You have some flexibility on how you want your DAO's voting system to work and Proposals should be stored, and you need to document that here so that your staff micro-auditor knows what spec to compare your implementation to.  -->
+## About
+A governance smart contract for a decentralized autonomous organization (DAO) with the purpose of buying NFTs with treasury funds. Members can submit proposals to purchase NFTs or execute arbitrary code. Votes can be made either on-chain or off-chain with EIP-712 signature. 
 
+## Technical Spec
 ### Proposal System Spec
 
 - Any member can create a proposal.
@@ -30,8 +31,6 @@
 - There will be no snapshot. However, when a new member join the DAO, a block.timestamp is recorded and the member cannot participate/vote in any active proposal before the timestamp
 
 ## Design Exercise Answer
-<!-- Answer the Design Exercise. -->
-<!-- In your answer: (1) Consider the tradeoffs of your design, and (2) provide some pseudocode, or a diagram, to illustrate how one would get started. -->
 > Per project specs there is no vote delegation; it's not possible for Alice to delegate her voting power to Bob, so that when Bob votes he does so with the voting power of both himself and Alice in a single transaction. This means for someone's vote to count, that person must sign and broadcast their own transaction every time. How would you design your contract to allow for non-transitive vote delegation?
 
 To add delegation vote, I think the main implementation logic is (1)to keep track how many votes has been delegated to a member (as multiple member can delegate to one member), (2)votes that had been delegated are not allow to vote (or else we will be double counting votes).
