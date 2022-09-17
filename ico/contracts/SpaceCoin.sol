@@ -3,13 +3,32 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+/**
+@title SpaceCoin Token (SPC).
+@notice ERC20 token with a fee on transfers.
+@author @benedictleekw
+ */
 contract SpaceCoin is ERC20 {
     event TransferToken(address to, uint256 amount, bool isTaxed);
+
+    /**
+    @notice Event emitted when the tax status
+     */
     event EnabledFlag(bool flag);
 
     address public creatorAddress;
+
+    /**
+    @notice Treasury address used to hold transfer fees.
+     */
     address public treasuryAddress;
+
+    // % fee on transfers.
     uint8 public constant TAX_PERCENTAGE = 2;
+
+    /**
+    @notice Flag indicating wether the transfer fee is activated or not.
+     */
     bool public taxEnabled;
 
     constructor(
@@ -23,6 +42,9 @@ contract SpaceCoin is ERC20 {
         _mint(address(_icoAddress), initialSupply * 10**18);
     }
 
+    /**
+    @notice Overrides ERC20 _transfer method.
+     */
     function _transfer(
         address from,
         address to,
@@ -43,6 +65,10 @@ contract SpaceCoin is ERC20 {
         }
     }
 
+    /**
+    @notice tax fee on transfers.
+    @dev Only the owner can call this function.
+     */
     function enabledTax(bool flag) public {
         require(
             creatorAddress == msg.sender,

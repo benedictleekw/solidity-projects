@@ -1,8 +1,13 @@
 # ICO Project
 
-## Technical Spec
-<!-- Here you should list the technical requirements of the project. These should include the points given in the project spec, but will go beyond what is given in the spec because that was written by a non-technical client who leaves it up to you to fill in the spec's details -->
+## About
+A fundrasing ERC20 token with multiple phases. 
+(1) Seed phase   : whitelist-only phase with limited indiviual and total contribution.
+(2) General phase: public phase with limited indiviual and total contribution.
+(3) Open phase   : open to public, where tokens become claimable.
+Contract owner can pause/resume fundraising at anytime. The token is designed with an optional transfer tax. This project has been deployed to Rinkeby testnet, with a vanilla front-end.
 
+## Technical Spec
 SpaceCoin Token Spec
 - Based off on ERC-20 token
 - 500,000 max total supply
@@ -23,8 +28,6 @@ ICO Spec
 - 
 
 ## Design Exercise Answer
-<!-- Answer the Design Exercise. -->
-<!-- In your answer: (1) Consider the tradeoffs of your design, and (2) provide some pseudocode, or a diagram, to illustrate how one would get started. -->
 > The base requirements give contributors their SPC tokens immediately. How would you design your contract to vest the awarded tokens instead, i.e. award tokens to users over time, linearly?
 
 There's several ways this can be done that would give the contributors flexibility and making sure the circulation supply is in control. If seed investor as getting vast discounted price as compare to public investor, it is the norm that seed investor will have a large portion of their token lock. This can be done thru the a separate smartcontract which will hold all the token that is being lock with x amount of time. After x amount of time, seed investors are free to redeem their token. 
