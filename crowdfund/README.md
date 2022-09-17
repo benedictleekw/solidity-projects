@@ -1,8 +1,9 @@
 # Crowdfund Project
 
-## Technical Spec
-<!-- Here you should list the technical requirements of the project. These should include the points given in the project spec, but will go beyond what is given in the spec because that was written by a non-technical client who leaves it up to you to fill in the spec's details -->
+## About
+A smart contract that allows creators to register their projects. Award a ERC721 contributor badge NFTs to contributors that invest past a certain threshold. A project owner can deploy a fundraising contract through the factory contract with set fundraising goals and timelines. Once goal has been met, the creators can withdraw the funds. Investors are refunded their contributions if the fundraiser is unsuccessful or cancelled.
 
+## Technical Spec
 - The smart contract is reusable; multiple projects can be registered and accept ETH concurrently.
     - Specifically, you should use the factory contract pattern.
         - When a new project is added a number of fields need to be stored: creator wallet, goal target, deadline, project name and NFT symbol. These fields will be keep on chain. 
@@ -39,8 +40,6 @@
 - The creator can choose to cancel their project before the 30 days are over, which has the same effect as a project failing.
 
 ## Design Exercise Answer
-<!-- Answer the Design Exercise. -->
-<!-- In your answer: (1) Consider the tradeoffs of your design, and (2) provide some pseudocode, or a diagram, to illustrate how one would get started. -->
 > Smart contracts have a hard limit of 24kb. Crowdfundr hands out an NFT to everyone who contributes. However, consider how Kickstarter has multiple contribution tiers. How would you design your contract to support this, without creating three separate NFT contracts?
 
 Instead of distributing 1 NFT for every 1 ETH contributed, with the introduction of contribution tier. We can use metadata to update the NFT with specific traits. This can be store off-chain database or IPFS. Since updating metadata is offchain, we wont need to worry about gas. To achieve this, everytime a contribution happen, the smartcontract will emit an event and we will have workers monitoring the event to update the NFT metadata/contribution tiers based on the information from the event. 
@@ -61,8 +60,3 @@ REPORT_GAS=true npx hardhat test # run your tests and output gas usage metrics
 npx hardhat node                 # spin up a fresh in-memory instance of the Ethereum blockchain
 npx prettier '**/*.{json,sol,md}' --write # format your Solidity and TS files
 ```
-
-## Unfinished feature
-- The current implementation only take into consideration when the contribution goal of less than 10 ETH. Having trouble figuring the math for deciding how many NFT to be minted based on the new contributed amount. 
-- If the user contribute 3 ETH in one transaction it will only mint 1 NFT instead of 3. I had a version with a for loop minting multiple NFT, but cannot figure out the logic to decide the minting number as mentioned above.
-- Unit test for security concerns. Do not know how to create test without creating a attacking contract. 
