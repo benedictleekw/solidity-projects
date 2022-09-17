@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 /**
 @title Collector DAO smart contract.
 @notice This contract is the house the logic of the DAO.
+@author @benedictleekw
  */
 contract Governor {
     enum ProposalState {
@@ -74,6 +75,9 @@ contract Governor {
         _;
     }
 
+    /** @notice contribute 1 eth to be part of the DAO
+      * 
+     */
     function buy() external payable {
         require(
             memberAddress[msg.sender] == 0,
@@ -84,6 +88,12 @@ contract Governor {
         totalMembers++;
     }
 
+    /** @notice create a proposal to buy an NFT
+      * @param nftAddress address of the nft to be propose.
+      * @param nftId id of the nft to be propose.
+      * @param maxPrice max price of the nft to be propose.
+      * @param description description of the proposal.
+     */
     function createBuyNFTProposal(address nftAddress, uint nftId, uint maxPrice, string memory description)
         external
         isMember
@@ -96,6 +106,14 @@ contract Governor {
         createProposal(targetAddresses, values, calldatas, description);
     }
 
+    /** @notice create the param hash for the proposal based on the params to buy an NFT
+      * @param nftAddress address of the nft to be propose.
+      * @param nftId id of the nft to be propose.
+      * @param maxPrice max price of the nft to be propose.
+      * @return targetAddresses array of addresses to be called during proposal execution
+      * @return values array of values to be called during proposal execution
+      * @return calldatas array of calldatas to be called during proposal execution
+     */
     function buildBuyNFTParamHash(address nftAddress, uint nftId, uint256 maxPrice) internal view returns(address[] memory targetAddresses, uint256[] memory values,
         bytes[] memory calldatas) {
         targetAddresses = new address[](1);
@@ -112,6 +130,13 @@ contract Governor {
         );
     }
 
+    /** @notice create arbitrarily proposal
+      * @param targetAddresses array of address for the proposal to be execute.
+      * @param values array of value for the proposal to be execute.
+      * @param calldatas array of calldata for the proposal to be execute.
+      * @param description description of the proposal.
+      * @return proposalId a hash id for the proposal based on the proposal params 
+     */
     function createProposal(
         address[] memory targetAddresses,
         uint256[] memory values,
@@ -145,6 +170,13 @@ contract Governor {
         emit ProposalCreated(proposalId, msg.sender);
     }
 
+    /** @notice create the param hash for the proposal based on the proposal params
+      * @param targetAddresses array of address for the proposal to be execute.
+      * @param values array of value for the proposal to be execute.
+      * @param calldatas array of calldata for the proposal to be execute.
+      * @param descriptionHash description of the proposal.
+      * @return uin256 a hash id for the proposal based on the proposal params 
+     */
     function hashProposal(
         address[] memory targetAddresses,
         uint256[] memory values,
@@ -155,6 +187,10 @@ contract Governor {
             uint256(keccak256(abi.encode(targetAddresses, values, calldatas, descriptionHash)));
     }
 
+    /** @notice get the state of the proposal
+      * @param proposalId hash id of the proposal based on the proposal params
+      * @return ProposalState the state of the proposal 
+     */
     function state(uint256 proposalId) public view returns (ProposalState) {
         require(
             proposals[proposalId].startTime != 0,
@@ -176,6 +212,10 @@ contract Governor {
         }
     }
 
+    /** @notice on-chain vote for proposal
+      * @param proposalId hash id of the proposal based on the proposal params
+      * @param voteDecision voting decision
+     */
     function vote(uint256 proposalId, VoteOptions voteDecision)
         external
         isMember
@@ -183,6 +223,13 @@ contract Governor {
         _vote(proposalId, voteDecision, msg.sender);
     }
 
+    /** @notice bulk signature submission of off-chain vote for proposal
+      * @param proposalIds array of hash id for the proposal based on the proposal params
+      * @param voteDecisions array of voting decision
+      * @param v array of recovery id for the signature
+      * @param r array of outputs of ECDSA for the signature
+      * @param s array of outputs of ECDSA for the signature
+     */
     function voteSigs(
         uint256[] memory proposalIds,
         VoteOptions[] memory voteDecisions,
@@ -196,6 +243,13 @@ contract Governor {
         }
     }
 
+     /** @notice single signature submission of off-chain vote for proposal
+      * @param proposalId hash id for the proposal
+      * @param voteDecision voting decision
+      * @param v recovery id for the signature
+      * @param r outputs of ECDSA for the signature
+      * @param s outputs of ECDSA for the signature
+     */
     function voteSig(
         uint256 proposalId,
         VoteOptions voteDecision,
@@ -216,6 +270,11 @@ contract Governor {
         _vote(proposalId, voteDecision, voterAddress);
     }
 
+    /** @notice vote on proposal
+      * @param proposalId hash id for the proposal
+      * @param voteDecision voting decision
+      * @param voterAddress address of the voter casting the vote
+     */
     function _vote(
         uint256 proposalId,
         VoteOptions voteDecision,
@@ -252,6 +311,12 @@ contract Governor {
         emit VoteCasted(proposalId, voterAddress, voteDecision);
     }
 
+    /** @notice execute proposal for buying NFT
+      * @param nftAddress address of the nft to be propose.
+      * @param nftId id of the nft to be propose.
+      * @param maxPrice max price of the nft to be propose.
+      * @param description description of the proposal.
+     */
     function executeBuyNFT(address nftAddress, uint nftId, uint maxPrice, string memory description)
         external
         isMember
@@ -273,6 +338,12 @@ contract Governor {
         execute(targetAddresses, values, calldatas, description);
     }
 
+    /** @notice execute proposal
+      * @param targetAddresses array of address for the proposal to be execute.
+      * @param values array of value for the proposal to be execute.
+      * @param calldatas array of calldata for the proposal to be execute.
+      * @param description description of the proposal.
+     */
     function execute(
         address[] memory targetAddresses,
         uint256[] memory values,
@@ -297,6 +368,10 @@ contract Governor {
         emit ProposalExecuted(proposalId, msg.sender);
     }
 
+    /** @notice check if quorum has been achieved
+      * @param _proposal proposal details
+      * @return bool status of quorum reached
+     */
     function _quorumReach(ProposalDetails storage _proposal)
         private
         view
