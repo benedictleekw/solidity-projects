@@ -1,7 +1,7 @@
 # LP Project
 
 ## About
-Adding liquidity pool for the ICO project, this smart contract is based off of Uniswap V2's decentralized exchange protocol that allows adding/removing liquidity and swaps through a constant curve formula. The contracts take special care to handle a token with internal transfer tax without unexpected slippage. This smartcontract address the flaw with Uniswap contract design prevents liquidity providers from unexpectedly donating additional funds to the pool if their provided liquidity ratio differs from the pool. This project has been deployed to Rinkeby testnet with a vanilla JS front-end.
+Adding liquidity pool for the ICO project, this smart contract is based off of Uniswap V2's decentralized exchange protocol that allows adding/removing liquidity and swaps through a constant curve formula. The contracts take special care to handle a token with internal transfer tax without unexpected slippage. This smartcontract address the flaw with Uniswap contract design prevents liquidity providers from unexpectedly donating additional funds to the pool if their provided liquidity ratio differs from the pool. The project has been deployed to Rinkeby testnet with a basic JS front-end.
 
 ## Technical Spec
 

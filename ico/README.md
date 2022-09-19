@@ -1,11 +1,11 @@
 # ICO Project
 
 ## About
-A fundrasing ERC20 token with multiple phases. 
-(1) Seed phase   : whitelist-only phase with limited indiviual and total contribution.
-(2) General phase: public phase with limited indiviual and total contribution.
+A fundraising ERC-20 token with multiple phases. 
+(1) Seed phase   : whitelist-only phase with limited individual and total contribution.
+(2) General phase: public phase with limited individual and total contribution.
 (3) Open phase   : open to public, where tokens become claimable.
-Contract owner can pause/resume fundraising at anytime. The token is designed with an optional transfer tax. This project has been deployed to Rinkeby testnet, with a vanilla front-end.
+Contract owner can pause/resume fundraising at anytime. The token is designed with an optional transfer tax. The project has been deployed to Rinkeby testnet, with a basic front-end.
 
 ## Technical Spec
 SpaceCoin Token Spec
