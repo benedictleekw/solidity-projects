@@ -1,5 +1,8 @@
 # Multisig Project
 
+## About
+Deploy and upgrade an OpenZeppelin Upgradeable Proxy/Logic contract using a Gnosis-safe managed multisig. The contract code was provided by Macro team. 
+
 ## Deliverables
 
 My Gnosis Safe can be found here: `https://gnosis-safe.io/app/rin:0xEBF4D25865078f85E9CCD04C76C0db8B6d3E7272/home`
