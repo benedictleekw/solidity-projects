@@ -1,7 +1,9 @@
 # LP Project
 
+## About
+Adding liquidity pool for the ICO project, this smart contract is based off of Uniswap V2's decentralized exchange protocol that allows adding/removing liquidity and swaps through a constant curve formula. The contracts take special care to handle a token with internal transfer tax without unexpected slippage. This smartcontract address the flaw with Uniswap contract design prevents liquidity providers from unexpectedly donating additional funds to the pool if their provided liquidity ratio differs from the pool. This project has been deployed to Rinkeby testnet with a vanilla JS front-end.
+
 ## Technical Spec
-<!-- Here you should list the technical requirements of the project. These should include the points given in the project spec, but will go beyond what is given in the spec because that was written by a non-technical client who leaves it up to you to fill in the spec's details -->
 
 SpaceCoin Token Spec
 - Based off on ERC-20 token
@@ -32,8 +34,6 @@ Liquidity Pool Spec
 - There's a 1% swapping fees that goes to liquidity provider.
 
 ## Design Exercise Answer
-<!-- Answer the Design Exercise. -->
-<!-- In your answer: (1) Consider the tradeoffs of your design, and (2) provide some pseudocode, or a diagram, to illustrate how one would get started. -->
 
 > How would you extend your LP contract to award additional rewards – say, a separate ERC-20 token – to further incentivize liquidity providers to deposit into your pool?
 
@@ -51,10 +51,6 @@ List of ideas to incentivize liquidity provider:
 | Router | https://rinkeby.etherscan.io/address/0xCCB8A8A96f61082152213cea639d49592Da7Eeba |
 | Pool | https://rinkeby.etherscan.io/address/0x6E8fB0B315DBB64626e4C4e9F75e5d8bD1433490 |
 
-
-## Unfinised feature
-1) Add checking deadline on swaps.
-2) The swap logic is not working as intended (unit test for swap missing and unable to fully test the front end)
 
 ## Useful Commands
 

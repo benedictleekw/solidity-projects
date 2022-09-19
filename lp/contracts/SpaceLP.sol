@@ -10,10 +10,21 @@ contract SpaceLP is ERC20 {
     address public immutable spaceCoinAddress;
     address public immutable treasury;
 
-    // pack into 1 slot, gas saving
+    /**
+    @notice Current reserves/holdings for each spc and eth in the LP.
+    @dev pack into 1 slot, gas saving.
+    @dev the reason to have reserves for the token pair is because it is possible for the real
+        balance to get out of sync. There is no way to withdraw tokens without the contract's 
+        consent, but deposits are a different matter. An account can transfer tokens to the 
+        exchange without calling either mint or swap.
+     */
     uint128 private spcReserve;
     uint128 public ethReserve;
 
+    /**
+    @notice Last constant curve value
+    @dev reserve0 * reserve1, as of immediately after the most recent liquidity event.
+     */
     uint public previousK;
 
     event TokenMint(address mintAddress, uint256 lpAmount);
@@ -25,6 +36,12 @@ contract SpaceLP is ERC20 {
         treasury = _treasury;
     }
 
+    /**
+    @notice Mint lp token
+    @param to address to send the lp token to
+    @dev This function is called when a liquidity provider adds liquidity to the pool.
+    @dev Additional liquidity token is minted as reward for providing SPC and ETH
+     */
     function mint(address to) external returns (uint lpAmount) {
         uint128 _ethReserve = ethReserve;
         uint128 _spcReserve = spcReserve;
@@ -49,6 +66,16 @@ contract SpaceLP is ERC20 {
         emit TokenMint(to, lpAmount);
     }
 
+    /**
+    @notice Swap between token1 and token2
+    @dev Transfer is optimistic, because we transfer before we are sure all the conditions are met. 
+        This is OK in Ethereum because if the conditions aren't met later in the call we revert out 
+        of it and any changes it created.
+    @dev On getting current balances. The periphery contract sends us the tokens before calling us 
+        for the swap. This makes it easy for the contract to check that it is not being cheated, 
+        a check that has to happen in the core contract (because we can be called by other entities 
+        than our periphery contract).
+     */
     function swap(uint ethAmountOut, uint spcAmountOut, address to) external {
         require(ethAmountOut > 0 || spcAmountOut > 0, "SpaceLP: amount must be more than 0");
         require(ethAmountOut == 0 || spcAmountOut == 0, "SpaceLP: can only swap 1 token at a time");
@@ -87,6 +114,13 @@ contract SpaceLP is ERC20 {
         }
     }
 
+    /**
+    @notice Burn LP token and return eth and spc
+    @param to address to send the eth and spc to
+    @dev The periphery contract transferred the liquidity to be burned to this contract before the call. 
+        That way we know how much liquidity to burn, and we can make sure that it gets burned.
+    @dev The liquidity provider receives equal value of both tokens. This way we don't change the exchange rate.
+     */
     function burn(address to) external returns (uint ethAmount, uint spcAmount) {
         uint _ethBalance = address(this).balance;
         uint _spcBalance = SpaceCoin(spaceCoinAddress).balanceOf(address(this));

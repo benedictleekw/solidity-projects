@@ -80,9 +80,6 @@ contract SpaceRouter {
     }
 
     function getSpcAmountTaxed(uint spcAmount) internal view returns (uint spcAmountAfterTax) {
-        // if (spaceCoin.taxEnabled()) {
-        //     spcAmountAfterTax = spcAmount * 98 / 100;
-        // }
         spcAmountAfterTax = spaceCoin.taxEnabled() ? spcAmount * 98 / 100 : spcAmount;
     }
 }
